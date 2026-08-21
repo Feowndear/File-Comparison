@@ -1,0 +1,8 @@
+node_modules/
+.env
+npm-debug.log*
+coverage/
+server.out.log
+server.err.log
+.ocr-data/
+.ocr-cache/

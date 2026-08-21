@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="本地运行的法务文档差异对比与 AI 风险研判工具" />
+    <title>法务文档对比台</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <i data-lucide="scale"></i>
+          </div>
+          <div>
+            <h1>法务文档对比台</h1>
+            <p>合同版本差异与风险研判</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="status-pill" id="apiStatus">
+            <span class="status-dot"></span>
+            <span>正在检查 AI</span>
+          </span>
+          <button class="icon-button" id="resetButton" type="button" title="重新开始" disabled>
+            <i data-lucide="rotate-ccw"></i>
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section class="upload-workspace" aria-labelledby="uploadTitle">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">文档输入</span>
+              <h2 id="uploadTitle">选择两个待对比版本</h2>
+            </div>
+            <span class="privacy-note"><i data-lucide="scan-text"></i>扫描 PDF 自动 OCR · 单文件 25 MB</span>
+          </div>
+
+          <div class="upload-grid">
+            <article class="upload-panel original-panel" data-side="original">
+              <div class="panel-label">
+                <span class="version-badge">A</span>
+                <div>
+                  <strong>原稿</strong>
+                  <span>对比基准版本</span>
+                </div>
+              </div>
+              <input id="originalInput" type="file" accept=".docx,.pdf" hidden />
+              <button class="dropzone" id="originalDropzone" type="button">
+                <span class="drop-icon"><i data-lucide="file-up"></i></span>
+                <strong>拖入原稿</strong>
+                <span>DOCX 或 PDF</span>
+              </button>
+              <div class="file-chip" id="originalFile" hidden></div>
+            </article>
+
+            <div class="compare-axis" aria-hidden="true">
+              <span><i data-lucide="arrow-right-left"></i></span>
+            </div>
+
+            <article class="upload-panel revised-panel" data-side="revised">
+              <div class="panel-label">
+                <span class="version-badge">B</span>
+                <div>
+                  <strong>修订稿</strong>
+                  <span>另一方法务版本</span>
+                </div>
+              </div>
+              <input id="revisedInput" type="file" accept=".docx,.pdf" hidden />
+              <button class="dropzone" id="revisedDropzone" type="button">
+                <span class="drop-icon"><i data-lucide="file-up"></i></span>
+                <strong>拖入修订稿</strong>
+                <span>DOCX 或 PDF</span>
+              </button>
+              <div class="file-chip" id="revisedFile" hidden></div>
+            </article>
+          </div>
+
+          <div class="compare-controls">
+            <label class="ai-toggle">
+              <input id="aiToggle" type="checkbox" checked />
+              <span class="toggle-track"><span></span></span>
+              <span>
+                <strong>AI 法务研判</strong>
+                <small id="modelLabel">检查模型配置中</small>
+              </span>
+            </label>
+            <button class="primary-button" id="compareButton" type="button" disabled>
+              <i data-lucide="scan-search"></i>
+              <span>开始对比</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="progress-panel" id="progressPanel" hidden aria-live="polite">
+          <div class="progress-copy">
+            <span class="spinner"></span>
+            <div>
+              <strong id="progressTitle">正在读取文档</strong>
+              <span id="progressText">提取段落与条款结构</span>
+            </div>
+          </div>
+          <div class="progress-track"><span id="progressBar"></span></div>
+        </section>
+
+        <section class="results" id="results" hidden>
+          <div class="result-header">
+            <div>
+              <span class="eyebrow">对比结果</span>
+              <h2 id="resultTitle">发现 0 组变更</h2>
+              <p id="resultSubtitle"></p>
+            </div>
+            <div class="result-actions">
+              <div class="segmented-control view-control" id="viewControl" aria-label="结果视图">
+                <button class="active" type="button" data-view="changes">
+                  <i data-lucide="list-filter"></i>
+                  <span>变更清单</span>
+                </button>
+                <button type="button" data-view="full">
+                  <i data-lucide="columns-2"></i>
+                  <span>全文对照</span>
+                </button>
+              </div>
+              <button class="secondary-button" id="exportButton" type="button">
+                <i data-lucide="download"></i>
+                <span>导出报告</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="stats-grid" id="statsGrid"></div>
+
+          <div class="result-layout" id="changesView">
+            <div class="changes-column">
+              <div class="changes-toolbar">
+                <div class="segmented-control" id="filterControl" aria-label="变更类型筛选">
+                  <button class="active" type="button" data-filter="all">全部</button>
+                  <button type="button" data-filter="modified">修改</button>
+                  <button type="button" data-filter="added">新增</button>
+                  <button type="button" data-filter="deleted">删除</button>
+                </div>
+                <label class="search-box">
+                  <i data-lucide="search"></i>
+                  <input id="changeSearch" type="search" placeholder="搜索条款" />
+                </label>
+              </div>
+              <div class="change-list" id="changeList"></div>
+            </div>
+
+            <aside class="analysis-panel" id="analysisPanel">
+              <div class="analysis-heading">
+                <span class="analysis-icon"><i data-lucide="sparkles"></i></span>
+                <div>
+                  <span>AI 研判</span>
+                  <strong id="riskLabel">等待分析</strong>
+                </div>
+              </div>
+              <div id="analysisContent"></div>
+            </aside>
+          </div>
+
+          <div class="full-comparison" id="fullComparison" hidden>
+            <div class="full-compare-legend">
+              <span><i class="legend-swatch removed"></i>原稿删除或替换</span>
+              <span><i class="legend-swatch added"></i>修订稿新增或替换</span>
+              <span id="fullCompareCount"></span>
+            </div>
+            <div class="full-compare-scroll">
+              <div class="full-compare-table">
+                <div class="full-compare-head">
+                  <div>
+                    <span class="version-badge">A</span>
+                    <strong id="fullOriginalName">原稿</strong>
+                  </div>
+                  <div>
+                    <span class="version-badge revised">B</span>
+                    <strong id="fullRevisedName">修订稿</strong>
+                  </div>
+                </div>
+                <div id="fullCompareList"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <span>AI 结果用于辅助审阅，不构成法律意见。</span>
+        <span id="footerModel"></span>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/vendor/lucide.js"></script>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

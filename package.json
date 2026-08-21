@@ -1,0 +1,31 @@
+{
+  "name": "legal-doc-compare",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local legal document comparison workspace for DOCX and PDF files.",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "test": "node --test",
+    "fixtures": "node scripts/create-fixtures.js"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^1.0.7",
+    "@tesseract.js-data/chi_sim": "^1.0.0",
+    "@tesseract.js-data/eng": "^1.0.0",
+    "diff": "^8.0.2",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "lucide": "^0.541.0",
+    "mammoth": "^1.10.0",
+    "multer": "^2.0.2",
+    "openai": "^5.16.0",
+    "pdfjs-dist": "^6.2.108",
+    "tesseract.js": "^7.0.0"
+  },
+  "devDependencies": {
+    "docx": "^9.5.1",
+    "pdfkit": "^0.17.2"
+  }
+}
